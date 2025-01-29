@@ -99,6 +99,67 @@ function readCookie() {
 	}
 }
 
+function doSignup() {
+    /*console.log("doLogin triggered");
+    console.log("urlBase:", urlBase);
+    console.log("Login API URL:", urlBase + '/Login.' + extension);*/
+
+    
+    
+
+	let firstName = document.getElementById("firstName").value;
+	let lastName = document.getElementById("lastName").value;
+    let login = document.getElementById("login").value;
+    let password = document.getElementById("password").value;
+	
+	document.getElementById("signupResult").innerHTML = "";
+
+    if (!firstName || !lastName || !login || !password) {
+        document.getElementById("signupResult").innerHTML = "Please fill out all fields.";
+        return;
+    }
+
+    //console.log("Login data:", { login, password });
+
+    let tmp = { firstName: firstName, lastName: lastName, login: login, password: password };
+    let jsonPayload = JSON.stringify(tmp);
+    let url = urlBase + '/Register.' + extension;
+
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-type", "application/json; charset=UTF-8");
+
+    xhr.onreadystatechange = function () {
+        if (this.readyState != 4) {
+			return;
+		}
+            if (this.status === 200) {
+                let jsonObject = JSON.parse(xhr.responseText);
+				userId = jsonObject.id;
+				document.getElementById("signupResult").innerHTML = "user added";
+                firstName = jsonObject.firstName;
+                lastName = jsonObject.lastName;
+				
+				
+                saveCookie();
+                window.location.href = "index.html"; // Redirect on successful sign up
+            } else {
+                document.getElementById("signupResult").innerHTML = "Error: Unable to connect to the API.";
+                console.error("Error Response:", xhr.responseText);
+            }
+        
+    };
+
+    try {
+        xhr.send(jsonPayload);
+        console.log("Request sent with payload:", jsonPayload);
+    } catch (err) {
+        document.getElementById("loginResult").innerHTML = "An error occurred: " + err.message;
+        console.error("Request error:", err);
+    }
+}
+
+
 function doLogout() {
 	userId = 0;
 	firstName = "";
