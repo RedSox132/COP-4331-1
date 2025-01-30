@@ -1,6 +1,6 @@
 <?php
 
-	// testing something
+	// testing something  for Chrome
     header("Access-Control-Allow-Origin: *");
     header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
     header("Access-Control-Allow-Headers: Content-Type");
@@ -31,6 +31,9 @@
     $lastName = $inData["lastName"];
     $login = $inData["login"];
     $password = $inData["password"];
+	# Hash Pass
+	$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
 
     # verify that the login does not already exist
     $stmt = $conn->prepare("SELECT ID FROM Users WHERE login = ?");
@@ -43,7 +46,7 @@
         returnWithError("User already exists");
     } else {
         $stmt = $conn->prepare("INSERT INTO Users (firstName, lastName, login, password) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $firstName, $lastName, $login, $password);
+        $stmt->bind_param("ssss", $firstName, $lastName, $login, $hashedPassword);  // ins hashed pass
         $stmt->execute();
 
         $id = $conn->insert_id; # get the id from db

@@ -1,82 +1,81 @@
 <?php
-    // testing something
-    header("Access-Control-Allow-Origin: *");
-    header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-    header("Access-Control-Allow-Headers: Content-Type");
-    // Get request data sent to the server in JSON format and decode it into an associative array
-    $inData = getRequestInfo();
-    
-    // Initialize variables to hold user information
-    $id = 0;
-    $firstName = "";
-    $lastName = "";
 
-    // Create a connection to the MySQL database
-    $conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331");
+// testing something for Chrome
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
 
-    // Check if the connection to the database failed
-    if( $conn->connect_error )
-    {
-        // Return an error message if the connection fails
-        returnWithError( $conn->connect_error );
+$inData = getRequestInfo(); # gets data from json file
+
+$login = "";
+$password = "";
+
+$conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331"); # connect to db
+
+# ensure connection works
+if ($conn->connect_error) {
+    returnWithError($conn->connect_error);
+    exit();
+}
+
+# ensure data is properly inserted
+if (!isset($inData["login"], $inData["password"])) {
+    returnWithError("Missing required fields");
+    exit();
+}
+
+# assign data to vars
+$login = $inData["login"];
+$password = $inData["password"];
+
+# query the database to fetch the hashed password
+$stmt = $conn->prepare("SELECT ID, firstName, lastName, password FROM Users WHERE login = ?");
+$stmt->bind_param("s", $login);
+$stmt->execute();
+$result = $stmt->get_result();
+
+# if no user found
+if ($result->num_rows === 0) {
+    returnWithError("User not found");
+} else {
+    $user = $result->fetch_assoc();
+    $storedHashedPassword = $user["password"]; # hashed password from DB
+
+    # verify the entered password against the stored hash
+    if (password_verify($password, $storedHashedPassword)) {
+        # if password is correct, return user info (without password)
+        returnWithInfo($user["ID"], $user["firstName"], $user["lastName"], $login);
+    } else {
+        returnWithError("Incorrect password");
     }
-    else
-    {
-        // Prepare an SQL statement to select user information based on login and password
-        $stmt = $conn->prepare("SELECT ID,FirstName,LastName FROM Users WHERE Login=? AND Password =?");
-        
-        // Bind parameters from the input data (login and password) to the prepared SQL statement
-        $stmt->bind_param("ss", $inData["login"], $inData["password"]);
-        
-        // Execute the SQL statement
-        $stmt->execute();
-        
-        // Fetch the result set from the executed statement
-        $result = $stmt->get_result();
+}
 
-        // Check if any record was found
-        if( $row = $result->fetch_assoc() )
-        {
-            // Return the user information if a matching record is found
-            returnWithInfo( $row['FirstName'], $row['LastName'], $row['ID'] );
-        }
-        else
-        {
-            // Return an error message if no matching records are found
-            returnWithError("No Records Found");
-        }
+$stmt->close();
+$conn->close();
 
-        // Close the statement and the database connection
-        $stmt->close();
-        $conn->close();
-    }
+# helper functions
+function getRequestInfo()
+{
+    return json_decode(file_get_contents('php://input'), true);
+}
 
-    // Function to retrieve JSON data from the HTTP request body
-    function getRequestInfo()
-    {
-        return json_decode(file_get_contents('php://input'), true);
-    }
+function sendResultInfoAsJson($obj)
+{
+    header('Content-type: application/json');
+    echo $obj;
+}
 
-    // Function to send a JSON response back to the client
-    function sendResultInfoAsJson( $obj )
-    {
-        header('Content-type: application/json'); // Set the response content type to JSON
-        echo $obj; // Output the JSON object
-    }
+function returnWithError($err)
+{
+    $retValue = '{"id":0,"firstName":"","lastName":"","login":"","password":"","error":"' . $err . '"}';
+    sendResultInfoAsJson($retValue);
+}
 
-    // Function to return an error response in JSON format
-    function returnWithError( $err )
-    {
-        // Create a JSON object with an error message and empty user information
-        $retValue = '{"id":0,"firstName":"","lastName":"","error":"' . $err . '"}';
-        sendResultInfoAsJson( $retValue ); // Send the JSON object as a response
-    }
+function returnWithInfo($id, $firstName, $lastName, $login)
+{
+    $retValue = '{"id":' . $id . ',"firstName":"' . $firstName . '","lastName":"' . $lastName . 
+                '","login":"' . $login . '","error":""}';
+    sendResultInfoAsJson($retValue);
+}
 
-    // Function to return user information in JSON format
-    function returnWithInfo( $firstName, $lastName, $id )
-    {
-        // Create a JSON object with user information and no error message
-        $retValue = '{"id":' . $id . ',"firstName":"' . $firstName . '","lastName":"' . $lastName . '","error":""}';
-        sendResultInfoAsJson( $retValue ); // Send the JSON object as a response
-    }
 ?>
