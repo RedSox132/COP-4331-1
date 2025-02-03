@@ -170,32 +170,27 @@ function doLogout() {
 
 
 function addContact() {
-    // Get the contact details from the input fields (ensure your HTML has these IDs)
     let contactFirstName = document.getElementById("contactFirstName").value;
     let contactLastName = document.getElementById("contactLastName").value;
     let contactEmail = document.getElementById("contactEmail").value;
     let contactPhone = document.getElementById("contactPhone").value;
-    
-    // Clear any previous messages
+
     document.getElementById("contactAddResult").innerHTML = "";
 
-    // Validate that all fields are filled out (optional)
     if (!contactFirstName || !contactLastName || !contactEmail || !contactPhone) {
         document.getElementById("contactAddResult").innerHTML = "Please fill out all contact fields.";
         return;
     }
 
-    // Build the payload including the logged in userId.
-    let tmp = { 
-        firstName: contactFirstName, 
-        lastName: contactLastName, 
-        email: contactEmail, 
-        phone: contactPhone, 
-        userId: userId 
+    let tmp = {
+        firstName: contactFirstName,
+        lastName: contactLastName,
+        email: contactEmail,
+        phone: contactPhone,
+        userId: userId
     };
     let jsonPayload = JSON.stringify(tmp);
 
-    // Update the API endpoint to the AddContact service.
     let url = urlBase + '/AddContact.' + extension;
 
     let xhr = new XMLHttpRequest();
@@ -207,6 +202,9 @@ function addContact() {
             if (this.readyState === 4) {
                 if (this.status === 200) {
                     document.getElementById("contactAddResult").innerHTML = "Contact has been added.";
+
+                    // Add the new contact to the table
+                    addContactToTable(contactFirstName, contactLastName, contactEmail, contactPhone);
                 } else {
                     document.getElementById("contactAddResult").innerHTML = "Error adding contact.";
                 }
@@ -216,6 +214,20 @@ function addContact() {
     } catch (err) {
         document.getElementById("contactAddResult").innerHTML = err.message;
     }
+}
+
+function addContactToTable(firstName, lastName, email, phone) {
+    let tableBody = document.getElementById("contactsTableBody");
+    let newRow = document.createElement("tr");
+
+    newRow.innerHTML = `
+        <td>${firstName} ${lastName}</td>
+        <td>${phone}</td>
+        <td>${email}</td>
+        <td><button class="btn btn-warning btn-sm" onclick="editContact()">Edit</button></td>
+    `;
+
+    tableBody.appendChild(newRow);
 }
 
 

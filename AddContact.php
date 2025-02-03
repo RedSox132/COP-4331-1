@@ -1,4 +1,8 @@
 <?php
+
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type");
     $inData = getRequestInfo();
 
     # ensure data is all required fields were filled out
@@ -23,7 +27,7 @@
 	} 
 	else
 	{
-        # add contact information to sql db
+        # Prepare and execute the SQL statement
         $stmt = $conn->prepare("INSERT into Contacts (UserId,FirstName,LastName,Phone,Email) VALUES(?,?,?,?,?)");
 		$stmt->bind_param("issss", $userId, $firstName, $lastName, $phone, $email);
 		$stmt->execute();
