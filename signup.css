@@ -1,4 +1,4 @@
-#loginDiv {
+#signupDiv {
     display: block;
     background: rgba(255, 255, 255, 0.9);
     padding: 2rem;
@@ -95,11 +95,11 @@ body {
     font-size: 30px;
 }
 
-#loginName {
+#login {
     font-size: 30px;
 }
 
-#loginPassword {
+#password {
     font-size: 30px;
 }
 
@@ -122,7 +122,7 @@ body {
     color: black;
 }
 
-#loginResult {
+#signupResult {
     display: inline-block;
     font-size: 0.8em;
     width: 90%;
@@ -133,24 +133,31 @@ body {
     color: #95060a;
 }
 
-#userName {
+#login {
     display: inline-block;
     width: 80%;
-    margin-left: 10%;
+    margin-left: 0%;
     text-align: center;
 }
 
 #firstName {
     display: inline-block;
     width: 80%;
-    margin-left: 10%;
+    margin-left: 0%;
     text-align: center;
 }
 
 #lastName {
     display: inline-block;
     width: 80%;
-    margin-left: 10%;
+    margin-left: 0%;
+    text-align: center;
+}
+
+#password {
+    display: inline-block;
+    width: 80%;
+    margin-left: 0%;
     text-align: center;
 }
 

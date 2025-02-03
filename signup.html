@@ -13,8 +13,8 @@
 		<span id="inner-title">SIGN UP</span>
 		<input type="text" id="firstName" placeholder="First Name" /><br />
 		<input type="text" id="lastName" placeholder="Last Name" /><br />
-		<input type="text" id="login" placeholder="Username" /><br />
-		<input type="password" id="password" placeholder="Password" /><br />
+		<input type="text" id="login" maxlength="32" placeholder="Username" /><br />
+		<input type="password" id="password" minlength="8" maxlength="32" placeholder="Password" /><br />
 		<button type="button" id="loginButton" class="buttons" onclick="doSignup();"> Submit </button>
 		<div id="login-link">
 			<a href="login.html">Already have an account? Log In</a>
