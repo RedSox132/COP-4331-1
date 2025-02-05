@@ -12,7 +12,7 @@ $password = "";
 
 $conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331"); # connect to db
 
-# ensure connection works
+# ensure connection worked
 if ($conn->connect_error) {
     returnWithError($conn->connect_error);
     exit();
