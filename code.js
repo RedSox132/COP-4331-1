@@ -4,7 +4,6 @@ const extension = 'php';
 let userId = 0;
 let firstName = "";
 let lastName = "";
-let contactIds = [];
 
 function doLogin() {
     userId = 0;
@@ -61,12 +60,12 @@ function doLogin() {
 function saveCookie() {
     let minutes = 20;
     let date = new Date();
-    date.setTime(date.getTime() + (minutes * 60 * 1000));
+    date.setTime(date.getTime() + (minutes * 60 * 1000));  // Set cookie expiry
     document.cookie = `firstName=${firstName},lastName=${lastName},userId=${userId};expires=${date.toGMTString()}`;
 }
 
 function readCookie() {
-    userId = -1;
+    userId = -1;  // Default value for userId
     let data = document.cookie;
     let splits = data.split(",");
     for (var i = 0; i < splits.length; i++) {
@@ -81,41 +80,33 @@ function readCookie() {
         else if (tokens[0] == "userId") {
             userId = parseInt(tokens[1].trim());
         }
-        else if (tokens[0] == "contactIds") {
-            contactIds = tokens[1].split(","); // Load saved contact IDs
-        }
     }
 
-    // Check if the user is already logged in
+    // Check if the user is logged in, if not redirect to login page
     if (userId < 0) {
-        // Redirect to login page only if the user is not logged in
         if (window.location.pathname !== "/index.html" && window.location.pathname !== "/login.html" && window.location.pathname !== "/signup.html") {
             window.location.href = "index.html";  // Redirect to login if user is not logged in
         }
     } else {
-        // User is logged in, display their name
+        // Display the logged-in user's name on the page
         document.getElementById("userName").innerHTML = "Logged in as " + firstName + " " + lastName;
+        loadContacts(); // Load contacts after reading the cookie
     }
 }
 
+
 function doSignup() {
-
-    
-    
-
-	let firstName = document.getElementById("firstName").value;
-	let lastName = document.getElementById("lastName").value;
+    let firstName = document.getElementById("firstName").value;
+    let lastName = document.getElementById("lastName").value;
     let login = document.getElementById("login").value;
     let password = document.getElementById("password").value;
-	
-	document.getElementById("signupResult").innerHTML = "";
+
+    document.getElementById("signupResult").innerHTML = "";
 
     if (!firstName || !lastName || !login || !password) {
         document.getElementById("signupResult").innerHTML = "Please fill out all fields.";
         return;
     }
-
-    //console.log("Login data:", { login, password });
 
     let tmp = { firstName: firstName, lastName: lastName, login: login, password: password };
     let jsonPayload = JSON.stringify(tmp);
@@ -127,23 +118,21 @@ function doSignup() {
 
     xhr.onreadystatechange = function () {
         if (this.readyState != 4) {
-			return;
-		}
-            if (this.status === 200) {
-                let jsonObject = JSON.parse(xhr.responseText);
-				userId = jsonObject.id;
-				document.getElementById("signupResult").innerHTML = "user added";
-                firstName = jsonObject.firstName;
-                lastName = jsonObject.lastName;
-				
-				
-                saveCookie();
-                window.location.href = "login.html"; // Redirect on successful sign up
-            } else {
-                document.getElementById("signupResult").innerHTML = "Error: Unable to connect to the API.";
-                console.error("Error Response:", xhr.responseText);
-            }
-        
+            return;
+        }
+        if (this.status === 200) {
+            let jsonObject = JSON.parse(xhr.responseText);
+            userId = jsonObject.id;
+            document.getElementById("signupResult").innerHTML = "user added";
+            firstName = jsonObject.firstName;
+            lastName = jsonObject.lastName;
+
+            saveCookie();
+            window.location.href = "login.html"; // Redirect on successful sign up
+        } else {
+            document.getElementById("signupResult").innerHTML = "Error: Unable to connect to the API.";
+            console.error("Error Response:", xhr.responseText);
+        }
     };
 
     try {
@@ -156,14 +145,14 @@ function doSignup() {
 }
 
 
-function doLogout() {
-	userId = 0;
-	firstName = "";
-	lastName = "";
-	document.cookie = "firstName= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
-	window.location.href = "index.html";
-}
 
+function doLogout() {
+    userId = 0;
+    firstName = "";
+    lastName = "";
+    document.cookie = "firstName= ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+    window.location.href = "index.html";
+}
 
 
 
@@ -187,6 +176,7 @@ function addContact() {
         phone: contactPhone,
         userId: userId
     };
+
     let jsonPayload = JSON.stringify(tmp);
 
     let url = urlBase + '/AddContact.' + extension;
@@ -197,101 +187,36 @@ function addContact() {
 
     try {
         xhr.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                if (this.status === 200) {
+            if (this.readyState === 4 && this.status === 200) {
+                let jsonResponse = JSON.parse(xhr.responseText);
+                console.log("API Response: ", jsonResponse);  // Log the response to ensure contactId is being returned
+
+                if (jsonResponse.results) {
+                    let contact = jsonResponse.results;
+
                     document.getElementById("contactAddResult").innerHTML = "Contact has been added.";
-
-                    // Assuming the response contains the new contact's ID, update contactIds
-                    let newContactId = JSON.parse(xhr.responseText).contactId;
-                    contactIds.push(newContactId); // Add the new contact ID to the list
-                    saveCookie(); // Save updated contactIds to cookies
-
-                    loadContacts(); // Reload contacts after adding a new one
+                    // Immediately append the new contact to the table
+                    addContactToTable(contact.contactId, contact.firstName, contact.lastName, contact.email, contact.phone);
+                    
+                    // Reset input fields after successful contact addition
+                    document.getElementById("contactFirstName").value = '';
+                    document.getElementById("contactLastName").value = '';
+                    document.getElementById("contactEmail").value = '';
+                    document.getElementById("contactPhone").value = '';
                 } else {
-                    document.getElementById("contactAddResult").innerHTML = "Error adding contact.";
+                    document.getElementById("contactAddResult").innerHTML = "Error adding contact: " + jsonResponse.error;
                 }
+            } else if (this.readyState === 4) {
+                document.getElementById("contactAddResult").innerHTML = "Error adding contact.";
+                console.error("API response error:", xhr.responseText); // Log any error response
             }
         };
         xhr.send(jsonPayload);
     } catch (err) {
         document.getElementById("contactAddResult").innerHTML = err.message;
+        console.error("Error:", err.message);
     }
 }
-
-function loadContacts() {
-    if (userId < 1) {
-        document.getElementById("contactsTable").innerHTML = "Please log in to view your contacts.";
-        return;
-    }
-
-    // Check if the user has any contacts saved
-    if (contactIds.length === 0) {
-        document.getElementById("contactsTable").innerHTML = "No contacts found.";
-        return; // If no contacts are saved, don't attempt to load anything
-    }
-
-    let tmp = {
-        search: "", // You can modify this to allow searching
-        userId: userId
-    };
-
-    let jsonPayload = JSON.stringify(tmp);
-
-    let url = urlBase + '/SearchContacts.' + extension;
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", url, true);
-    xhr.setRequestHeader("Content-type", "application/json; charset=UTF-8");
-
-    try {
-        xhr.onreadystatechange = function () {
-            if (this.readyState === 4 && this.status === 200) {
-                let jsonObject = JSON.parse(xhr.responseText);
-
-                // Check if the results array exists
-                if (jsonObject.results && jsonObject.results.length > 0) {
-                    let tableBody = document.getElementById("contactsTableBody");
-                    tableBody.innerHTML = ''; // Clear the table body
-
-                    jsonObject.results.forEach((contact) => {
-                        let row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${contact.firstName} ${contact.lastName}</td>
-                            <td>${contact.phone}</td>
-                            <td>${contact.email}</td>
-                            <td>
-                                <button class="btn btn-warning btn-sm" onclick="openEditContactModal('${contact.contactId}', '${contact.firstName}', '${contact.lastName}', '${contact.email}', '${contact.phone}')">Edit</button>
-                            </td>
-                        `;
-                        row.setAttribute("id", `contact-${contact.contactId}`);
-                        tableBody.appendChild(row);
-                    });
-                } else {
-                    let tableBody = document.getElementById("contactsTableBody");
-                    jsonObject.results.forEach((contact) => {
-                        let row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${contact.firstName} ${contact.lastName}</td>
-                            <td>${contact.phone}</td>
-                            <td>${contact.email}</td>
-                            <td>
-                                <button class="btn btn-warning btn-sm" onclick="openEditContactModal('${contact.contactId}', '${contact.firstName}', '${contact.lastName}', '${contact.email}', '${contact.phone}')">Edit</button>
-                            </td>
-                        `;
-                        row.setAttribute("id", `contact-${contact.contactId}`);
-                        tableBody.appendChild(row);
-                    });
-                }
-            } else {
-                document.getElementById("contactsTable").innerHTML = "Error loading contacts.";
-            }
-        };
-        xhr.send(jsonPayload);
-    } catch (err) {
-        console.log(err.message);
-        document.getElementById("contactsTable").innerHTML = "Error loading contacts.";
-    }
-}
-
 
 function addContactToTable(contactId, firstName, lastName, email, phone) {
     let tableBody = document.getElementById("contactsTableBody");
@@ -309,6 +234,64 @@ function addContactToTable(contactId, firstName, lastName, email, phone) {
     newRow.setAttribute("id", `contact-${contactId}`);
     tableBody.appendChild(newRow);
 }
+
+
+function loadContacts() {
+    if (userId < 1) {
+        document.getElementById("contactsTable").innerHTML = "Please log in to view your contacts.";
+        return;
+    }
+
+    let tmp = {
+        userId: userId
+    };
+
+    let jsonPayload = JSON.stringify(tmp);
+
+    let url = urlBase + '/Contacts.' + extension;
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-type", "application/json; charset=UTF-8");
+
+    try {
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                let jsonObject = JSON.parse(xhr.responseText);
+                console.log(jsonObject);  // Log the entire response
+
+                if (jsonObject.results && jsonObject.results.length > 0) {
+                    let tableBody = document.getElementById("contactsTableBody");
+                    tableBody.innerHTML = ''; // Clear the table body
+
+                    // Populate the table with the retrieved contacts
+                    jsonObject.results.forEach((contact) => {
+                        console.log(contact);  // Log each contact object to check the structure
+                        let row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${contact.FirstName || 'N/A'} ${contact.LastName || 'N/A'}</td>
+                            <td>${contact.Phone || 'N/A'}</td>
+                            <td>${contact.Email || 'N/A'}</td>
+                            <td>
+                                <button class="btn btn-warning btn-sm" onclick="openEditContactModal('${contact.contactId}', '${contact.FirstName}', '${contact.LastName}', '${contact.Email}', '${contact.Phone}')">Edit</button>
+                            </td>
+                        `;
+                        row.setAttribute("id", `contact-${contact.contactId}`);
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    document.getElementById("contactsTable").innerHTML = "No contacts found.";
+                }
+            }
+        };
+        xhr.send(jsonPayload);
+    } catch (err) {
+        console.log(err.message);
+        document.getElementById("contactsTable").innerHTML = "Error loading contacts.";
+    }
+}
+
+
+
 
 
 // Function to search for contacts
