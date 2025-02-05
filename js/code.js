@@ -216,28 +216,26 @@ function addContact() {
         xhr.onreadystatechange = function () {
             if (this.readyState === 4 && this.status === 200) {
                 let jsonResponse = JSON.parse(xhr.responseText);
-                console.log("API Response: ", jsonResponse);  // Log the response to ensure contactId is being returned
 
                 if (jsonResponse.results) {
                     let contact = jsonResponse.results;
-
                     document.getElementById("contactAddResult").innerHTML = "Contact has been added.";
-                    // Immediately append the new contact to the table
+
+                    // Append the new contact to the table immediately
                     addContactToTable(contact.contactId, contact.firstName, contact.lastName, contact.email, contact.phone);
-					
 
                     // Reset input fields after successful contact addition
                     document.getElementById("contactFirstName").value = '';
                     document.getElementById("contactLastName").value = '';
                     document.getElementById("contactEmail").value = '';
                     document.getElementById("contactPhone").value = '';
-					loadContacts();
+                    loadContacts();
                 } else {
                     document.getElementById("contactAddResult").innerHTML = "Error adding contact: " + jsonResponse.error;
                 }
             } else if (this.readyState === 4) {
                 document.getElementById("contactAddResult").innerHTML = "Error adding contact.";
-                console.error("API response error:", xhr.responseText); // Log any error response
+                console.error("API response error:", xhr.responseText);
             }
         };
         xhr.send(jsonPayload);
@@ -245,8 +243,13 @@ function addContact() {
         document.getElementById("contactAddResult").innerHTML = err.message;
         console.error("Error:", err.message);
     }
+
+    // Close the modal after adding the contact
+    const modal = bootstrap.Modal.getInstance(document.getElementById('addContactModal'));
+    modal.hide();
 }
 
+// Function to append the new contact to the table
 function addContactToTable(contactId, firstName, lastName, email, phone) {
     let tableBody = document.getElementById("contactsTableBody");
     let newRow = document.createElement("tr");
@@ -256,16 +259,18 @@ function addContactToTable(contactId, firstName, lastName, email, phone) {
         <td>${phone}</td>
         <td>${email}</td>
         <td>
-            <button class="btn btn-warning btn-sm" onclick="openEditContactModal('${contactId}', '${firstName}', '${lastName}', '${email}', '${phone}')">Edit</button>
-			
+            <button class="btn btn-warning btn-sm" onclick="openEditContactModal('${contactId}', '${firstName}', '${lastName}', '${email}', '${phone}')">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteContact('${contactId}')">
+                <i class="fa-solid fa-delete-left"></i>
+            </button>
         </td>
-		
     `;
-	
+
     newRow.setAttribute("id", `contact-${contactId}`);
     tableBody.appendChild(newRow);
 }
-
 
 function loadContacts() {
     if (userId < 1) {
@@ -304,9 +309,12 @@ function loadContacts() {
                             <td>${contact.Phone || 'N/A'}</td>
                             <td>${contact.Email || 'N/A'}</td>
                             <td>
-                                <button class="btn btn-warning btn-sm" onclick="openEditContactModal('${contact.ID}', '${contact.FirstName}', '${contact.LastName}', '${contact.Email}', '${contact.Phone}', this)">Edit</button>
-								<button class="btn btn-warning btn-sm" onclick="deleteContact('${contact.ID}')">Delete</button>
-								
+                                <button class="btn btn-warning btn-sm" onclick="openEditContactModal('${contact.ID}', '${contact.FirstName}', '${contact.LastName}', '${contact.Email}', '${contact.Phone}')">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteContact('${contact.ID}')">
+                                    <i class="fa-solid fa-delete-left"></i>
+                                </button>
                             </td>
                         `;
                         row.setAttribute("id", `contact-${contact.contactId}`);

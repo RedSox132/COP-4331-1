@@ -14,62 +14,26 @@ body {
     display: inline-block;
 }
 
-/* Base list styling */
-ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    background: #22438C; /* Adjust background */
+#logoutButton {
+    align-self: flex-start;
+    margin-top: 0;
+    transition: transform 0.3s ease-in-out;
 }
 
-ul li {
-    display: inline-block;
-    position: relative;
+#logoutButton:hover {
+    transform: scale(1.1);
+    background-color: #4f92ff;
 }
 
-ul li a {
-    display: block;
-    padding: 20px 25px;
-    color: #FFF; /* Text color */
-    text-decoration: none;
-    font-size: 20px;
+button.btn.btn-primary.mb-3 {
+    margin-top: 10px; /* Adjust as necessary */
+    transition: transform 0.3s ease-in-out;
 }
 
-ul li ul.dropdown {
-    display: none; /* Hidden by default */
-    position: absolute;
-    top: 100%; /* Align below the parent item */
-    left: 0;
-    background: #22438C;
-    z-index: 999;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 200px; /* Adjust as needed */
+button.btn.btn-primary.mb-3:hover {
+    transform: scale(1.025);
+    background-color: #4f92ff;
 }
-
-ul li ul.dropdown li {
-    display: block; /* Display dropdown items */
-}
-
-ul li ul.dropdown li a {
-    padding: 10px 20px; /* Adjust padding for dropdown */
-    color: #FFF;
-    text-align: left;
-}
-
-ul li:hover ul.dropdown {
-    display: block; /* Show dropdown on hover */
-}
-
-ul li a:hover {
-    background: #112C66; /* Highlight on hover */
-}
-
-ul li ul.dropdown li a:hover {
-    background: #1E63B1; /* Highlight dropdown items on hover */
-}
-
 #title
 {
     font-size: 40px;
@@ -85,28 +49,6 @@ ul li ul.dropdown li a:hover {
     transform: translate(-50%, -50%);
 }
 
-
-#login_signup {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    flex-direction: column; /* Stack buttons vertically */
-    gap: 10px; /* Add spacing between buttons */
-}
-
-#login, #signup {
-    font-size: 28px; 
-    font-family: 'Jersey 15';
-    color: #000; 
-    transition: transform 0.3s ease-in-out;
-    text-align: center;
-}
-
-#login:hover, #signup:hover {
-    transform: scale(1.1);
-    background-color: #67a2c4;
-}
 
 body {
     background-color: linear-gradient(to right, rgb(0, 67, 250), rgb(33, 152, 173));
@@ -116,13 +58,18 @@ body {
     background-attachment: fixed;
     background-size: cover;
 }
-
+#ContactHeader {
+    font-size: 40px;
+	width: 100%;
+	text-align: left;
+	font-family: 'Jersey 15';
+}
 #userName
 {
 	font-size: 40px;
 	width: 100%;
 	text-align: center;
-	font-family: 'Arial, sans-serif';
+	font-family: 'Jersey 15';
 }
 
 #title
@@ -140,26 +87,4 @@ body {
     transform: translate(-50%, -50%);
 }
 
-
-#login_signup {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    flex-direction: column; /* Stack buttons vertically */
-    gap: 10px; /* Add spacing between buttons */
-}
-
-#login, #signup {
-    font-size: 28px; 
-    font-family: 'Jersey 15';
-    color: #000; 
-    transition: transform 0.3s ease-in-out;
-    text-align: center;
-}
-
-#login:hover, #signup:hover {
-    transform: scale(1.1);
-    background-color: #67a2c4;
-}
 
