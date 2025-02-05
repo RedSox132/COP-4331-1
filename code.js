@@ -96,6 +96,13 @@ function readCookie() {
 
 
 function doSignup() {
+    /*console.log("doLogin triggered");
+    console.log("urlBase:", urlBase);
+    console.log("Login API URL:", urlBase + '/Login.' + extension);*/
+
+
+
+
     let firstName = document.getElementById("firstName").value;
     let lastName = document.getElementById("lastName").value;
     let login = document.getElementById("login").value;
@@ -104,9 +111,28 @@ function doSignup() {
     document.getElementById("signupResult").innerHTML = "";
 
     if (!firstName || !lastName || !login || !password) {
-        document.getElementById("signupResult").innerHTML = "Please fill out all fields.";
+        document.getElementById("signupResult").innerHTML = "*Please fill out all fields.";
         return;
     }
+    if (password.length < 8 || password.length > 32) {
+        document.getElementById("signupResult").innerHTML = "*Passwords must be between 8 and 32 characters.";
+        return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        document.getElementById("signupResult").innerHTML = "*Password must contain at least one special character.";
+        return;
+    }
+    if (!/\d/.test(password)) {
+        document.getElementById("signupResult").innerHTML = "*Password must contain at least one number.";
+        return;
+    }
+    if (!/[A-Z]/.test(password)) {
+        document.getElementById("signupResult").innerHTML = "*Password must contain at least one capital letter.";
+        return;
+    }
+
+
+    //console.log("Login data:", { login, password });
 
     let tmp = { firstName: firstName, lastName: lastName, login: login, password: password };
     let jsonPayload = JSON.stringify(tmp);
@@ -127,12 +153,14 @@ function doSignup() {
             firstName = jsonObject.firstName;
             lastName = jsonObject.lastName;
 
+
             saveCookie();
             window.location.href = "login.html"; // Redirect on successful sign up
         } else {
             document.getElementById("signupResult").innerHTML = "Error: Unable to connect to the API.";
             console.error("Error Response:", xhr.responseText);
         }
+
     };
 
     try {
@@ -143,7 +171,6 @@ function doSignup() {
         console.error("Request error:", err);
     }
 }
-
 
 
 function doLogout() {
@@ -197,7 +224,7 @@ function addContact() {
                     document.getElementById("contactAddResult").innerHTML = "Contact has been added.";
                     // Immediately append the new contact to the table
                     addContactToTable(contact.contactId, contact.firstName, contact.lastName, contact.email, contact.phone);
-                    
+
                     // Reset input fields after successful contact addition
                     document.getElementById("contactFirstName").value = '';
                     document.getElementById("contactLastName").value = '';
@@ -487,6 +514,6 @@ function deleteContact(contactId) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     readCookie(); // Read cookies after the DOM has loaded
 });
